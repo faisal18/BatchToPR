@@ -18,6 +18,7 @@ namespace BatchToPR
     {
         private static void Main(string[] args)
         {
+            Console.WriteLine("Test repo");
             //BatchtoPR_cls yo = new BatchtoPR_cls();
             //DHCC dhcc_obj = new DHCC();
             //dhcc_obj.ConvertDateFields();
