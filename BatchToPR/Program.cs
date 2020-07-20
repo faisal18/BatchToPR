@@ -71,23 +71,23 @@ namespace BatchToPR
                     bool openonly = Boolean.Parse(ConfigurationManager.AppSettings.Get("openticketsonly"));
 
 
-                    //TicketHistory(basedir, connection, openonly);
-                    //TicketActions(basedir, connection, openonly);
-                    //TicketComments(basedir, connection, openonly);
-                    //Application(basedir, connection);
-                    //Attachments(basedir, connection, openonly);
-                    //AttachmentDump(basedir, connection, openonly);
-                    //LinkedTickets(basedir, connection, openonly);
-                    //RequesterDetails(basedir, connection);
-                    //CreateTicket(basedir, connection, openonly);
+                    TicketHistory(basedir, connection, openonly);
+                    TicketActions(basedir, connection, openonly);
+                    TicketComments(basedir, connection, openonly);
+                    Application(basedir, connection);
+                    Attachments(basedir, connection, openonly);
+                    AttachmentDump(basedir, connection, openonly);
+                    LinkedTickets(basedir, connection, openonly);
+                    RequesterDetails(basedir, connection);
+                    CreateTicket(basedir, connection, openonly);
 
                     JiraTicket(basedir, connection, openonly);
-                    //JiraComments(basedir, connection, openonly);
+                    JiraComments(basedir, connection, openonly);
 
-                    //Obsoleted
+                    ////Obsoleted
                     //TicketHistoryStatuses(basedir, connection, openonly);
 
-                    //Not Approved
+                    ////Not Approved
                     //TicketCommentsActual(basedir, connection, openonly);
                     //JiraTicketsId(basedir, connection, openonly);
 
@@ -185,7 +185,7 @@ namespace BatchToPR
                     string query = string.Empty;
                     if (!openOnly)
                     {
-                        query = "select  ticketinformationid as 'ticket_id',CONVERT(nvarchar,TicketAttachmentID)+'_'+[filename] as 'attachment_fileName',DATEDIFF(s, '1970-01-01 00:00:00', CreationDate) as 'CreationDate'  from ticketattachment with(nolock) where TicketAttachment.TicketInformationID in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock) group by TH3.TicketInformationID))";
+                        query = "select  ticketinformationid as 'ticket_id',CONVERT(nvarchar,TicketAttachmentID)+'_'+[filename] as 'attachment_fileName',DATEDIFF(s, '1970-01-01 00:00:00', CreationDate) as 'CreationDate'  from ticketattachment with(nolock) where TicketAttachment.TicketInformationID in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock)  where TH3.CreationDate>'2020-06-26 00:00:00' group by TH3.TicketInformationID))";
                     }
                     else
                     {
@@ -247,7 +247,7 @@ namespace BatchToPR
                     }
                     else
                     {
-                        query = "select TicketInformationID,CONVERT(nvarchar,TicketAttachmentID)+'_'+[filename] as 'filename',Attachment from ticketattachment with(nolock) where TicketAttachment.TicketInformationID in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock) group by TH3.TicketInformationID))";
+                        query = "select TicketInformationID,CONVERT(nvarchar,TicketAttachmentID)+'_'+[filename] as 'filename',Attachment from ticketattachment with(nolock) where TicketAttachment.TicketInformationID in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock)  where TH3.CreationDate>'2020-06-26 00:00:00' group by TH3.TicketInformationID))";
                     }
 
 
@@ -301,7 +301,7 @@ namespace BatchToPR
                             "Thist.IncidentStatusID as 'TicketStatusID'," +
                             "stat_IS.Description  as 'TicketStatusDescription'," +
                             "'' as 'group_name','' as 'isinternal','' as 'reopened_on','' as 'l1_assignee','' as 'l2_assignee','' as 'l3_assignee','' as 'l1_assignee_name','' as 'l2_assignee_name','' as 'l3_assignee_name','' as 'l1_assigneddate','' as 'l2_assigneddate','' as 'l3_assigneddate','' as 'resolution'"+
-                            "from TicketInformation TIN with(nolock) inner join CallerInformation CIN with(nolock) on CIN.CallerInformationID = TIN.callerkeyid  inner join Statuses stat with(nolock)  on stat.StatusesID = TIN.TicketType  inner join TicketHistory Thist with(nolock) on TIN.TicketInformationID = Thist.TicketInformationID and Thist.TicketHistoryID = (select max(Th2.TicketHistoryID) from TicketHistory Th2 with(nolock)  where th2.TicketInformationID = TIN.TicketInformationID)  left join ItemTypes ITST with(nolock) on ITST.itemtypesid = Thist.SupportTypeID  left join Applications Apps with(nolock) on TIN.applicationId  = Apps.applicationsid  left join ItemTypes ITCP with(nolock) on TIN.PriorityID = ITCP.ItemTypesID  left join ItemTypes ITIP with(nolock) on Thist.PriorityID = ITIP.ItemTypesID  left join ItemTypes ITCS with(nolock) on TIN.SeverityID = ITCS.ItemTypesID  left join ItemTypes ITIS with(nolock) on Thist.SeverityID = ITIS.ItemTypesID  left join Statuses stat_SIC with(nolock) on Thist.IncidentSubStatusID = stat_SIC.StatusesID left join Statuses stat_IS with(nolock) on Thist.IncidentStatusID = stat_IS.StatusesID left join PersonInformation PIN with(nolock) on TIN.CreatedBy = PIN.FullName  left join UserRoles UR with(nolock) on UR.PersonID = PIN.PersonInformationID  left join Roles with(nolock) on UR.RoleID = Roles.RolesID  left join Resolution with(nolock) on TIN.TicketInformationID = Resolution.TicketInformationID    where   Thist.TicketInformationID in (select TicketInformationID from TicketHistory th_OPEN  with(nolock) where th_OPEN.IncidentStatusID not in (12,14,39)  and th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock) group by TH3.TicketInformationID))  order by TIN.CreationDate asc  ";
+                            "from TicketInformation TIN with(nolock) inner join CallerInformation CIN with(nolock) on CIN.CallerInformationID = TIN.callerkeyid  inner join Statuses stat with(nolock)  on stat.StatusesID = TIN.TicketType  inner join TicketHistory Thist with(nolock) on TIN.TicketInformationID = Thist.TicketInformationID and Thist.TicketHistoryID = (select max(Th2.TicketHistoryID) from TicketHistory Th2 with(nolock)  where th2.TicketInformationID = TIN.TicketInformationID)  left join ItemTypes ITST with(nolock) on ITST.itemtypesid = Thist.SupportTypeID  left join Applications Apps with(nolock) on TIN.applicationId  = Apps.applicationsid  left join ItemTypes ITCP with(nolock) on TIN.PriorityID = ITCP.ItemTypesID  left join ItemTypes ITIP with(nolock) on Thist.PriorityID = ITIP.ItemTypesID  left join ItemTypes ITCS with(nolock) on TIN.SeverityID = ITCS.ItemTypesID  left join ItemTypes ITIS with(nolock) on Thist.SeverityID = ITIS.ItemTypesID  left join Statuses stat_SIC with(nolock) on Thist.IncidentSubStatusID = stat_SIC.StatusesID left join Statuses stat_IS with(nolock) on Thist.IncidentStatusID = stat_IS.StatusesID left join PersonInformation PIN with(nolock) on TIN.CreatedBy = PIN.FullName  left join UserRoles UR with(nolock) on UR.PersonID = PIN.PersonInformationID  left join Roles with(nolock) on UR.RoleID = Roles.RolesID  left join Resolution with(nolock) on TIN.TicketInformationID = Resolution.TicketInformationID    where   Thist.TicketInformationID in (select TicketInformationID from TicketHistory th_OPEN  with(nolock) where th_OPEN.IncidentStatusID not in (12,14,39)  and th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock)  where TH3.CreationDate>'2020-06-26 00:00:00' group by TH3.TicketInformationID))  order by TIN.CreationDate asc  ";
                     }
                     else
                     {
@@ -330,7 +330,7 @@ namespace BatchToPR
                             "Thist.IncidentStatusID as 'TicketStatusID'," +
                             "stat_IS.Description  as 'TicketStatusDescription'," +
                             "'' as 'group_name','' as 'isinternal','' as 'reopened_on','' as 'l1_assignee','' as 'l2_assignee','' as 'l3_assignee','' as 'l1_assignee_name','' as 'l2_assignee_name','' as 'l3_assignee_name','' as 'l1_assigneddate','' as 'l2_assigneddate','' as 'l3_assigneddate','' as 'resolution'" +
-                            "from TicketInformation TIN with(nolock) inner join CallerInformation CIN with(nolock) on CIN.CallerInformationID = TIN.callerkeyid  inner join Statuses stat with(nolock) on stat.StatusesID = TIN.TicketType  inner join TicketHistory Thist with(nolock) on TIN.TicketInformationID = Thist.TicketInformationID and Thist.TicketHistoryID = (select max(Th2.TicketHistoryID) from TicketHistory Th2 with(nolock) where th2.TicketInformationID = TIN.TicketInformationID)  left join ItemTypes ITST with(nolock)  on ITST.itemtypesid = Thist.SupportTypeID  left join Applications Apps with(nolock) on TIN.applicationId  = Apps.applicationsid  left join ItemTypes ITCP with(nolock) on TIN.PriorityID = ITCP.ItemTypesID  left join ItemTypes ITIP with(nolock) on Thist.PriorityID = ITIP.ItemTypesID  left join ItemTypes ITCS with(nolock) on TIN.SeverityID = ITCS.ItemTypesID  left join ItemTypes ITIS with(nolock) on Thist.SeverityID = ITIS.ItemTypesID  left join Statuses stat_SIC with(nolock) on Thist.IncidentSubStatusID = stat_SIC.StatusesID left join Statuses stat_IS with(nolock) on Thist.IncidentStatusID = stat_IS.StatusesID left join PersonInformation PIN with(nolock) on TIN.CreatedBy = PIN.FullName  left join UserRoles UR with(nolock) on UR.PersonID = PIN.PersonInformationID  left join Roles with(nolock) on UR.RoleID = Roles.RolesID  left join Resolution with(nolock) on TIN.TicketInformationID = Resolution.TicketInformationID    where   Thist.TicketInformationID in (select TicketInformationID from TicketHistory th_OPEN  with(nolock) where th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock) group by TH3.TicketInformationID))  order by TIN.CreationDate asc  ";
+                            "from TicketInformation TIN with(nolock) inner join CallerInformation CIN with(nolock) on CIN.CallerInformationID = TIN.callerkeyid  inner join Statuses stat with(nolock) on stat.StatusesID = TIN.TicketType  inner join TicketHistory Thist with(nolock) on TIN.TicketInformationID = Thist.TicketInformationID and Thist.TicketHistoryID = (select max(Th2.TicketHistoryID) from TicketHistory Th2 with(nolock) where th2.TicketInformationID = TIN.TicketInformationID)  left join ItemTypes ITST with(nolock)  on ITST.itemtypesid = Thist.SupportTypeID  left join Applications Apps with(nolock) on TIN.applicationId  = Apps.applicationsid  left join ItemTypes ITCP with(nolock) on TIN.PriorityID = ITCP.ItemTypesID  left join ItemTypes ITIP with(nolock) on Thist.PriorityID = ITIP.ItemTypesID  left join ItemTypes ITCS with(nolock) on TIN.SeverityID = ITCS.ItemTypesID  left join ItemTypes ITIS with(nolock) on Thist.SeverityID = ITIS.ItemTypesID  left join Statuses stat_SIC with(nolock) on Thist.IncidentSubStatusID = stat_SIC.StatusesID left join Statuses stat_IS with(nolock) on Thist.IncidentStatusID = stat_IS.StatusesID left join PersonInformation PIN with(nolock) on TIN.CreatedBy = PIN.FullName  left join UserRoles UR with(nolock) on UR.PersonID = PIN.PersonInformationID  left join Roles with(nolock) on UR.RoleID = Roles.RolesID  left join Resolution with(nolock) on TIN.TicketInformationID = Resolution.TicketInformationID    where   Thist.TicketInformationID in (select TicketInformationID from TicketHistory th_OPEN  with(nolock) where th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock)  where TH3.CreationDate>'2020-06-26 00:00:00' group by TH3.TicketInformationID))  order by TIN.CreationDate asc  ";
                     }
                     SQLWriter yo = new SQLWriter();
                     yo.run(basedir, "CreateTicket.csv", Execute_Query(connection, query));
@@ -376,11 +376,11 @@ namespace BatchToPR
                     string query = string.Empty;
                     if (openOnly)
                     {
-                        query = "select TR_TI_ID as 'ticket_id',TR_TI_ToID as 'Linked Ticket'  from TicketRelation with(nolock) where TicketRelation.TR_TI_ID in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where th_OPEN.IncidentStatusID not in (  12,14,39)and th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock) group by TH3.TicketInformationID))";
+                        query = "select TR_TI_ID as 'ticket_id',TR_TI_ToID as 'Linked Ticket'  from TicketRelation with(nolock) where TicketRelation.TR_TI_ID in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where th_OPEN.IncidentStatusID not in (  12,14,39)and th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock)  where TH3.CreationDate>'2020-06-26 00:00:00' group by TH3.TicketInformationID))";
                     }
                     else
                     {
-                        query = "select TR_TI_ID as 'ticket_id',TR_TI_ToID as 'Linked Ticket'  from TicketRelation with(nolock) where TicketRelation.TR_TI_ID in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock) group by TH3.TicketInformationID))";
+                        query = "select TR_TI_ID as 'ticket_id',TR_TI_ToID as 'Linked Ticket'  from TicketRelation with(nolock) where TicketRelation.TR_TI_ID in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock)  where TH3.CreationDate>'2020-06-26 00:00:00' group by TH3.TicketInformationID))";
                     }
                     SQLWriter yo = new SQLWriter();
                     yo.run(basedir, "LinkedTickets.csv", Execute_Query(connection, query));
@@ -422,7 +422,7 @@ namespace BatchToPR
                 try
                 {
 
-                    string query = "select CallerInformationID,CallerLicense,Name,Email,PhoneNumber,Location,Department,'NA' as 'DeviceTYpe',MachineName,isOwner,isContactPerson from CallerInformation";
+                    string query = "select CallerInformationID,CallerLicense,Name,Email,PhoneNumber,Location,Department,'NA' as 'DeviceTYpe',MachineName,isOwner,isContactPerson from CallerInformation  where CreationDate>'2020-06-26 00:00:00'";
                     SQLWriter yo = new SQLWriter();
                     yo.run(basedir, "RequesterDetails.csv", Execute_Query(connection, query));
 
@@ -472,7 +472,7 @@ namespace BatchToPR
                             "THis.CreatedBy,"+
                             "DATEDIFF(s, '1970-01-01 00:00:00', THis.CreationDate) as 'CreationDate',"+
                             "DATEDIFF(s, '1970-01-01 00:00:00', THis.UpdateDate) as 'UpdatedDate'"+
-                            "from tickethistory THis with(nolock) inner join PersonInformation PIn with(nolock) on PIn.fullname = THis.CreatedBy where THis.TicketInformationID in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where th_OPEN.IncidentStatusID not in (  12,14,39) and th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock) group by TH3.TicketInformationID))";
+                            "from tickethistory THis with(nolock) inner join PersonInformation PIn with(nolock) on PIn.fullname = THis.CreatedBy where THis.TicketInformationID in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where th_OPEN.IncidentStatusID not in (  12,14,39) and th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock)  where TH3.CreationDate>'2020-06-26 00:00:00' group by TH3.TicketInformationID))";
                     }
                     else
                     {
@@ -483,7 +483,7 @@ namespace BatchToPR
                             "THis.CreatedBy," +
                             "DATEDIFF(s, '1970-01-01 00:00:00', THis.CreationDate) as 'CreationDate'," +
                             "DATEDIFF(s, '1970-01-01 00:00:00', THis.UpdateDate) as 'UpdatedDate'" +
-                            "from tickethistory THis with(nolock) inner join PersonInformation PIn with(nolock) on PIn.fullname = THis.CreatedBy where THis.TicketInformationID in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock) group by TH3.TicketInformationID))";
+                            "from tickethistory THis with(nolock) inner join PersonInformation PIn with(nolock) on PIn.fullname = THis.CreatedBy where THis.TicketInformationID in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock)  where TH3.CreationDate>'2020-06-26 00:00:00' group by TH3.TicketInformationID))";
                     }
                     SQLWriter yo = new SQLWriter();
                     yo.run(basedir, "TicketActions.csv", Execute_Query(connection, query));
@@ -536,7 +536,7 @@ namespace BatchToPR
                             "DATEDIFF(s, '1970-01-01 00:00:00', PIn.UpdateDate) as 'updated_on'," +
                             "PIn.Email as 'email'," +
                             "PIn.FullName as 'name'" +
-                            "from JiraTicketComments JTC with(nolock) inner join PersonInformation PIn with(nolock) on PIn.fullname = JTC.CreatedBy where JTC.TicketInformationID in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where th_OPEN.IncidentStatusID not in (  12,14,39)and th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock)  group by TH3.TicketInformationID))";
+                            "from JiraTicketComments JTC with(nolock) inner join PersonInformation PIn with(nolock) on PIn.fullname = JTC.CreatedBy where JTC.TicketInformationID in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where th_OPEN.IncidentStatusID not in (  12,14,39)and th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock)  where TH3.CreationDate>'2020-06-26 00:00:00'  group by TH3.TicketInformationID))";
                     }
                     else
                     {
@@ -548,7 +548,7 @@ namespace BatchToPR
                             "DATEDIFF(s, '1970-01-01 00:00:00', PIn.UpdateDate) as 'updated_on'," +
                             "PIn.Email as 'email'," +
                             "PIn.FullName as 'name'" +
-                            "from JiraTicketComments JTC with(nolock) inner join PersonInformation PIn with(nolock) on PIn.fullname = JTC.CreatedBy where JTC.TicketInformationID in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where  th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock) group by TH3.TicketInformationID))";
+                            "from JiraTicketComments JTC with(nolock) inner join PersonInformation PIn with(nolock) on PIn.fullname = JTC.CreatedBy where JTC.TicketInformationID in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where  th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock)  where TH3.CreationDate>'2020-06-26 00:00:00' group by TH3.TicketInformationID))";
                     }
                     SQLWriter yo = new SQLWriter();
                     yo.run(basedir, "TicketComments.csv", Execute_Query(connection, query));
@@ -602,7 +602,7 @@ namespace BatchToPR
                             "DATEDIFF(s, '1970-01-01 00:00:00', THis.UpdateDate) as 'UpdatedDate'," +
                             "'' as 'opt_msg'," +
                             "PIn.Email as 'addedby_email'" +
-                            "from tickethistory THis with(nolock) inner join PersonInformation PIn with(nolock) on PIn.fullname = THis.CreatedBy where THis.TicketInformationID in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where th_OPEN.IncidentStatusID not in (  12,14,39)and th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock) group by TH3.TicketInformationID))";
+                            "from tickethistory THis with(nolock) inner join PersonInformation PIn with(nolock) on PIn.fullname = THis.CreatedBy where THis.TicketInformationID in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where th_OPEN.IncidentStatusID not in (  12,14,39)and th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock)  where TH3.CreationDate>'2020-06-26 00:00:00' group by TH3.TicketInformationID))";
                     }
                     else
                     {
@@ -615,7 +615,7 @@ namespace BatchToPR
                             "DATEDIFF(s, '1970-01-01 00:00:00', THis.UpdateDate) as 'UpdatedDate'," +
                             "'' as 'opt_msg'," +
                             "PIn.Email as 'addedby_email'" +
-                            "from tickethistory THis with(nolock) inner join PersonInformation PIn with(nolock) on PIn.fullname = THis.CreatedBy where THis.TicketInformationID in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock) group by TH3.TicketInformationID))";
+                            "from tickethistory THis with(nolock) inner join PersonInformation PIn with(nolock) on PIn.fullname = THis.CreatedBy where THis.TicketInformationID in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock)  where TH3.CreationDate>'2020-06-26 00:00:00' group by TH3.TicketInformationID))";
                     }
                     SQLWriter yo = new SQLWriter();
                     yo.run(basedir, "TicketHistory.csv", Execute_Query(connection, query));
@@ -661,11 +661,11 @@ namespace BatchToPR
                     string query = string.Empty;
                     if (openOnly)
                     {
-                        query = "select TicketInformationID as 'TicketId',Statuses.Description as 'StatusDescription',Statuses.StatusesID as 'StatusID',TicketHistory.CreationDate as 'CreationDate' from TicketHistory with(nolock) inner join Statuses with(nolock)on Statuses.StatusesID = IncidentStatusID where TicketHistory.IncidentStatusID not in (12,14,39) and TicketHistory.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock) group by TH3.TicketInformationID)";
+                        query = "select TicketInformationID as 'TicketId',Statuses.Description as 'StatusDescription',Statuses.StatusesID as 'StatusID',TicketHistory.CreationDate as 'CreationDate' from TicketHistory with(nolock) inner join Statuses with(nolock)on Statuses.StatusesID = IncidentStatusID where TicketHistory.IncidentStatusID not in (12,14,39) and TicketHistory.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock)  where TH3.CreationDate>'2020-06-26 00:00:00' group by TH3.TicketInformationID)";
                     }
                     else
                     {
-                        query = "select TicketInformationID as 'TicketId',Statuses.Description as 'StatusDescription',Statuses.StatusesID as 'StatusID',TicketHistory.CreationDate as 'CreationDate' from TicketHistory with(nolock) inner join Statuses with(nolock)on Statuses.StatusesID = IncidentStatusID where TicketHistory.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock) group by TH3.TicketInformationID)";
+                        query = "select TicketInformationID as 'TicketId',Statuses.Description as 'StatusDescription',Statuses.StatusesID as 'StatusID',TicketHistory.CreationDate as 'CreationDate' from TicketHistory with(nolock) inner join Statuses with(nolock)on Statuses.StatusesID = IncidentStatusID where TicketHistory.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock)  where TH3.CreationDate>'2020-06-26 00:00:00' group by TH3.TicketInformationID)";
                     }
                     SQLWriter yo = new SQLWriter();
                     yo.run(basedir, "TicketHistoryStatus.csv", Execute_Query(connection, query));
@@ -727,7 +727,7 @@ namespace BatchToPR
                                 "DATEDIFF(s, '1970-01-01 00:00:00', JT.UpdateDate) as 'updated_on'" +
                                 "from JiraTicket JT with(nolock) " +
                                 "inner join PersonInformation PIn with(nolock) on PIn.fullname = JT.CreatedBy " +
-                                "where JT.TicketInformationID in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where th_OPEN.IncidentStatusID not in (12,14,39) and th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock) group by TH3.TicketInformationID))";
+                                "where JT.TicketInformationID in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where th_OPEN.IncidentStatusID not in (12,14,39) and th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock)  where TH3.CreationDate>'2020-06-26 00:00:00' group by TH3.TicketInformationID))";
                     }
                     else
                     {
@@ -743,7 +743,7 @@ namespace BatchToPR
                                 "DATEDIFF(s, '1970-01-01 00:00:00', JT.UpdateDate) as 'updated_on'" +
                                 "from JiraTicket JT with(nolock) " +
                                 "inner join PersonInformation PIn with(nolock) on PIn.fullname = JT.CreatedBy " +
-                                "where JT.TicketInformationID in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock) group by TH3.TicketInformationID))";
+                                "where JT.TicketInformationID in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock)  where TH3.CreationDate>'2020-06-26 00:00:00' group by TH3.TicketInformationID))";
                     }
                     SQLWriter yo = new SQLWriter();
                     yo.run(basedir, "JiraTicket.csv", Execute_Query(connection, query));
@@ -771,7 +771,7 @@ namespace BatchToPR
                                 "	th.CreatedBy" +
                                 "    from TicketHistory th with (nolock)" +
                                 "	where " +
-                                "	th.ticketinformationid in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where th_OPEN.IncidentStatusID not in (12,14,39) and  th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock) group by TH3.TicketInformationID))" +
+                                "	th.ticketinformationid in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where th_OPEN.IncidentStatusID not in (12,14,39) and  th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock)  where TH3.CreationDate>'2020-06-26 00:00:00' group by TH3.TicketInformationID))" +
                                 "	and th.Comments is not null and th.Comments != '' and exists (select jtc.TicketInformationID from JiraTicketComments jtc where th.TicketInformationID = jtc.TicketInformationID)";
                     }
                     else
@@ -786,7 +786,7 @@ namespace BatchToPR
                             "	th.CreatedBy" +
                             "    from TicketHistory th with (nolock)" +
                             "	where " +
-                            "	th.ticketinformationid in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock) group by TH3.TicketInformationID))" +
+                            "	th.ticketinformationid in (select TicketInformationID from TicketHistory th_OPEN with(nolock) where th_OPEN.TicketHistoryID in (select MAX(TicketHistoryID) from IQServiceDesk_Prod..TicketHistory TH3 with(nolock)  where TH3.CreationDate>'2020-06-26 00:00:00' group by TH3.TicketInformationID))" +
                             "	and th.Comments is not null and th.Comments != '' and exists (select jtc.TicketInformationID from JiraTicketComments jtc where th.TicketInformationID = jtc.TicketInformationID)";
                     }
                     SQLWriter yo = new SQLWriter();
